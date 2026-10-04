@@ -1,0 +1,9 @@
+# Copy to .env if you self-host n8n and want these as environment variables.
+# In n8n you normally add these as Credentials in the UI instead.
+# Never commit a real .env file.
+
+ANTHROPIC_API_KEY=
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+GOOGLE_SHEET_ID=
+# Gmail, Google Calendar and Google Sheets use OAuth2 credentials set up inside n8n.

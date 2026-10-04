@@ -1,0 +1,76 @@
+# OpportunityOS
+
+**Autonomous Opportunity Agent built with n8n** · HackSprint · Team IMPACT · Track 2: AI Automation with n8n
+
+OpportunityOS watches your Gmail inbox and an RSS feed for hackathons, internships and scholarships, scores each one against your profile with Claude, and then acts: it schedules the strong fits, asks you about the borderline ones on Telegram, and archives the rest.
+
+## The problem
+
+Opportunities are buried in emails and scattered feeds. Deadlines get missed, irrelevant or paid-entry events waste time, and nobody keeps a record of what was considered.
+
+## How it works
+
+![Workflow canvas](docs/canvas.png)
+
+1. **Ingest:** a Gmail trigger and a 6-hourly RSS pull feed one `Normalize Input` step that builds a unified record.
+2. **Evaluate:** `Profile & Policy` adds your profile and thresholds, and Claude returns a JSON verdict (is it an opportunity, fit score, deadline, eligibility, red flags, reasoning).
+3. **Guardrails:** `Parse & Guardrails` applies fixed rules over the LLM verdict.
+4. **Act:** the `Route by Action` switch sends each item down one of three paths.
+5. **Approve:** borderline items reach you on Telegram; your button press triggers a second flow that creates the event or marks the item rejected.
+6. **Remember:** every decision is logged to a Google Sheet.
+
+### Decision rules
+
+| Outcome | Condition |
+|---|---|
+| Auto-schedule | Fit score 80 or more, no red flags, deadline more than 48 hours away |
+| Ask on Telegram | Fit score 50 to 79, or any red flag |
+| Archive | Fit score below 50, ineligible, or not an opportunity |
+
+The LLM suggests; deterministic code decides.
+
+## Data flow diagram
+
+![Level 1 DFD](docs/dfd.png)
+
+8 processes, 2 data stores, 5 external entities.
+
+## Tech stack
+
+n8n · Gmail · RSS · Anthropic Claude · Google Calendar · Google Sheets · Telegram
+
+## Setup
+
+1. Install or open n8n (cloud or self-hosted).
+2. Import `workflow/opportunityos_workflow.json` (**Workflows → Import from file**).
+3. Create these credentials in n8n and attach them to the matching nodes:
+   - Gmail OAuth2
+   - Google Calendar OAuth2
+   - Google Sheets OAuth2
+   - Telegram API (bot token from @BotFather)
+   - Anthropic API key (for the Claude node)
+4. Create a Google Sheet for memory with these columns in row 1:
+   `is_opportunity, type, title, organizer, deadline, eligible, effort_hours, fit_score, reasoning, red_flags, recommended_action, action, status, uid, link, source, logged_at`
+5. Replace the placeholders in the workflow:
+   - `YOUR_SHEET_ID` in every Google Sheets node
+   - `YOUR_CHAT_ID` in the Telegram node (your chat ID with the bot)
+   - the RSS URL in `Opportunity RSS Feed`
+6. Edit your profile and the 80 / 50 thresholds in the `Profile & Policy` node.
+7. Activate the workflow.
+
+See `.env.example` for the keys involved. Never commit real keys or tokens.
+
+## Demo
+
+- Demo video: [add link]
+
+## Future scope
+
+- WhatsApp and Slack as sources
+- Auto-drafted application emails and deadline reminders
+- Learning from approve and reject history to tune thresholds
+- Multiple user profiles
+
+## Team IMPACT
+
+Sanjith Medam · Rithwik Avasarala · Maanas Appekkat · Farhan F
